@@ -1028,6 +1028,9 @@ function renderDone() {
   const question = latest?.question;
   const questionNumber = latest?.questionNumber || Number(state.number) || "";
   const answerText = latest?.answerText || state.answerText || "";
+  const questionLength = (question?.questionText || "").length;
+  const questionSize = questionLength > 34 ? " text-small" : questionLength > 22 ? " text-medium" : "";
+  const answerSize = answerText.length > 140 ? " text-small" : answerText.length > 70 ? " text-medium" : "";
   const style = question?.mode === "new_year" ? "new_year_red" : "year_review_blue";
   state.completionQuote ||= pickCompletionQuote(question?.mode || state.mode);
   page(`
@@ -1038,10 +1041,10 @@ function renderDone() {
       <article id="questionCardPreview" class="saved-question-card ${style}">
         <p class="app-name">回憶抽屜</p>
         <p class="question-number">第 ${questionNumber} 題</p>
-        <p class="main">${question?.questionText || "剛剛那張卡片"}</p>
+        <p class="main${questionSize}">${question?.questionText || "剛剛那張卡片"}</p>
         <div class="saved-answer">
           <span>我的回答</span>
-          <p>${escapeHtml(answerText)}</p>
+          <p class="${answerSize.trim()}">${escapeHtml(answerText)}</p>
         </div>
       </article>
       <p class="helper">圖片只在這台裝置產生，內容不會因下載而公開上傳。</p>

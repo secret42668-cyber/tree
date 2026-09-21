@@ -590,6 +590,9 @@ h3 {
 .saved-question-card p {
   margin: 0;
   max-width: 88%;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
   position: relative;
   z-index: 1;
 }
@@ -618,6 +621,15 @@ h3 {
   line-height: 1.36;
 }
 
+.saved-question-card .main.text-medium {
+  font-size: clamp(1.5rem, 3.6vw, 2.15rem);
+}
+
+.saved-question-card .main.text-small {
+  font-size: clamp(1.25rem, 3vw, 1.75rem);
+  line-height: 1.48;
+}
+
 .saved-answer {
   width: 88%;
   padding-top: 22px;
@@ -635,13 +647,23 @@ h3 {
 
 .saved-answer p {
   margin-top: 10px;
+  max-width: 100%;
   max-height: 12em;
-  overflow: auto;
+  overflow: hidden;
   color: rgba(39, 36, 33, 0.82);
   font-size: clamp(1rem, 2.3vw, 1.2rem);
   line-height: 1.7;
   text-align: left;
   white-space: pre-wrap;
+}
+
+.saved-answer p.text-medium {
+  font-size: clamp(0.9rem, 2vw, 1.05rem);
+}
+
+.saved-answer p.text-small {
+  font-size: clamp(0.78rem, 1.7vw, 0.92rem);
+  line-height: 1.55;
 }
 
 .saved-question-card .credit {

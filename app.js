@@ -220,14 +220,36 @@ const questions = Object.entries(questionGroups).flatMap(([mode, groups]) =>
   ),
 );
 
-const stageOrder = {
-  year_review: ["moment", "feeling", "growth", "relationship", "action", "letting_go"],
-  new_year: ["direction", "plan", "relationship", "habit", "adjustment"],
-};
-
 const labels = {
   year_review: "年末回顧",
   new_year: "新年展望",
+};
+
+const completionQuotes = {
+  year_review: [
+    "回頭看，不是為了後悔，而是為了知道自己走了多遠。",
+    "年度回顧，不是替一年打分數，而是替經歷找到意義。",
+    "有些事情沒有完成，但不代表這一年沒有前進。",
+    "與其問今年做成了多少，不如問今年學會了什麼。",
+    "不是每一段努力都有結果，但每一段經歷都留下了線索。",
+    "年末最重要的，不是盤點得失，而是辨認什麼值得留下。",
+    "一年會過去，但那些讓你改變的事，會留下來。",
+    "看懂走過的路，才知道自己是怎麼來到這裡的。",
+    "回顧，是把發生過的事情，慢慢整理成自己的經驗。",
+    "有些答案，要走完整整一年之後才看得見。",
+  ],
+  new_year: [
+    "未來不是從一月一日開始，而是從下一個選擇開始。",
+    "展望不是列出更多目標，而是決定什麼值得繼續。",
+    "新的一年，不一定要成為更好的人，但可以更知道自己想成為誰。",
+    "不必把所有遺憾留在去年，可以把它們變成明年的方向。",
+    "下一年不需要重新開始，只需要帶著理解繼續往前。",
+    "不需要預測明年會發生什麼，只需要決定自己想怎麼回應。",
+    "好的年度展望，不是把未來排滿，而是替重要的事情留出空間。",
+    "有些事情值得堅持，有些事情值得放下，新的開始也是一次選擇。",
+    "明年的方向，不一定來自新的目標，也可能來自今年尚未完成的問題。",
+    "展望未來，不是要求自己走得更快，而是更清楚要往哪裡走。",
+  ],
 };
 
 const shareStyleLabels = {
@@ -486,6 +508,7 @@ const state = {
   summary: null,
   action: null,
   riskAlert: null,
+  completionQuote: "",
   share: {
     displayQuestion: true,
     displayAnswer: false,
@@ -501,7 +524,6 @@ const app = document.querySelector("#app");
 const storageKeys = {
   answers: "drawerAnswers",
   actions: "drawerActions",
-  submissions: "drawerSubmissions",
   shareCards: "drawerShareCards",
 };
 
@@ -603,6 +625,7 @@ function bindEvents() {
       state.answerText = "";
       state.followUpAnswer = "";
       state.summary = null;
+      state.completionQuote = "";
       state.answers = [];
       state.share.backgroundStyle = state.mode === "new_year" ? "new_year_red" : "year_review_blue";
       setView("number");
@@ -630,11 +653,6 @@ function bindEvents() {
     followInput.addEventListener("input", (event) => {
       state.followUpAnswer = event.target.value;
     });
-  }
-
-  const submissionForm = document.querySelector("#submissionForm");
-  if (submissionForm) {
-    submissionForm.addEventListener("submit", submitQuestion);
   }
 
   const actionForm = document.querySelector("#actionForm");
@@ -695,7 +713,6 @@ function render() {
     summary: renderSummary,
     action: renderAction,
     share: renderShare,
-    submit: renderSubmitQuestion,
     done: renderDone,
   };
 
@@ -716,9 +733,6 @@ function renderHome() {
           <strong>新年展望</strong>
           <span>看見明年的方向，並把期待放進日常裡。</span>
         </button>
-      </div>
-      <div class="actions">
-        <button class="button secondary" data-view="submit">投稿一張抽屜卡</button>
       </div>
     </div>
   `);
@@ -748,24 +762,27 @@ function drawQuestion() {
     return;
   }
 
-  const answeredIds = state.answers.map((answer) => answer.question.id);
-  const progress = state.answers.length;
-  const stage = stageOrder[state.mode][Math.min(progress, stageOrder[state.mode].length - 1)];
-  const candidates = questions.filter(
-    (question) =>
-      question.mode === state.mode &&
-      question.stage === stage &&
-      !answeredIds.includes(question.id),
+  const answeredIds = new Set(state.answers.map((answer) => answer.question.id));
+  const orderedQuestions = questions
+    .filter((question) => question.mode === state.mode)
+    .sort((first, second) => {
+      const firstScore = stableTextIndex(`${state.sessionId}:${state.mode}:${first.id}`, 1000003);
+      const secondScore = stableTextIndex(`${state.sessionId}:${state.mode}:${second.id}`, 1000003);
+      return firstScore - secondScore || first.id.localeCompare(second.id);
+    });
+  const preferredIndex = userNumber - 1;
+  const availableQuestion = Array.from({ length: orderedQuestions.length }, (_, offset) =>
+    orderedQuestions[(preferredIndex + offset) % orderedQuestions.length]
+  ).find((question) =>
+    !answeredIds.has(question.id) &&
+    (orderedQuestions.length === 1 || question.id !== state.currentQuestion?.id)
   );
-  const pool = candidates.length ? candidates : questions.filter((question) => question.mode === state.mode);
-  const freshPool =
-    state.currentQuestion && pool.length > 1
-      ? pool.filter((question) => question.id !== state.currentQuestion.id)
-      : pool;
-  state.currentQuestion = freshPool[userNumber % freshPool.length];
+
+  state.currentQuestion = availableQuestion || orderedQuestions[preferredIndex];
   state.answerText = "";
   state.followUpAnswer = "";
   state.followUpQuestion = "";
+  state.completionQuote = "";
   setView("question");
 }
 
@@ -797,6 +814,7 @@ function submitAnswer() {
   state.riskAlert = detectRiskContent(state.answerText);
   state.followUpQuestion = "";
   state.followUpAnswer = "";
+  state.completionQuote = pickCompletionQuote(state.mode);
   rememberCurrentAnswer();
   setView("done");
 }
@@ -1012,11 +1030,12 @@ function renderDone() {
   const questionNumber = latest?.questionNumber || Number(state.number) || "";
   const answerText = latest?.answerText || state.answerText || "";
   const style = question?.mode === "new_year" ? "new_year_red" : "year_review_blue";
+  state.completionQuote ||= pickCompletionQuote(question?.mode || state.mode);
   page(`
     <div class="stack">
       ${renderSafetyCard()}
       <span class="eyebrow">已收進抽屜</span>
-      <h2>你的回答已經記下來了。</h2>
+      <h2>${escapeHtml(state.completionQuote)}</h2>
       <article id="questionCardPreview" class="saved-question-card ${style}">
         <p class="app-name">回憶抽屜</p>
         <p class="question-number">第 ${questionNumber} 題</p>
@@ -1703,61 +1722,9 @@ function wrapCanvasText(context, text, maxWidth, maxLines = 5) {
   return visible;
 }
 
-function renderSubmitQuestion() {
-  page(`
-    <form id="submissionForm" class="stack">
-      <span class="eyebrow">投稿題目</span>
-      <h2>你也有一個值得被問的問題嗎？</h2>
-      <p class="helper">把它放進抽屜裡，也許明年會被某個人打開。</p>
-      <label class="stack">
-        <span class="small">題目</span>
-        <textarea class="textarea" name="questionText" required placeholder="今年有沒有一件小事，後來成為很重要的事？"></textarea>
-      </label>
-      <label class="stack">
-        <span class="small">適用模式</span>
-        <select class="select" name="mode">
-          <option value="year_review">年末回顧</option>
-          <option value="new_year">新年展望</option>
-          <option value="both">兩者都適合</option>
-        </select>
-      </label>
-      <label class="stack">
-        <span class="small">分類</span>
-        <input class="field" name="category" placeholder="時刻與畫面" />
-      </label>
-      <label class="stack">
-        <span class="small">為什麼想投稿這題</span>
-        <textarea class="textarea" name="reason" placeholder="這題可以讓人回看不起眼但重要的變化。"></textarea>
-      </label>
-      <div class="toolbar">
-        <label class="check"><input type="checkbox" name="allowCredit" /> 願意顯示署名</label>
-        <input class="field" name="authorName" placeholder="署名，可留空" />
-      </div>
-      <div class="actions">
-        <button class="button" type="submit">送出投稿</button>
-        <button class="button secondary" type="button" data-view="home">回首頁</button>
-      </div>
-    </form>
-  `);
-}
-
-function submitQuestion(event) {
-  event.preventDefault();
-  const form = new FormData(event.currentTarget);
-  const submission = {
-    id: createId("submission"),
-    questionText: form.get("questionText"),
-    mode: form.get("mode"),
-    category: form.get("category"),
-    reason: form.get("reason"),
-    authorName: form.get("authorName"),
-    allowCredit: form.get("allowCredit") === "on",
-    status: "pending",
-    createdAt: new Date().toISOString(),
-  };
-  appendStored(storageKeys.submissions, submission);
-  setToast("已收到。種樹人會先讀過，再決定是否放進題庫。");
-  event.currentTarget.reset();
+function pickCompletionQuote(mode) {
+  const quotes = completionQuotes[mode] || completionQuotes.year_review;
+  return quotes[Math.floor(Math.random() * quotes.length)];
 }
 
 function trimText(text, length) {

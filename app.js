@@ -260,8 +260,6 @@ const shareStyleLabels = {
   minimal_white: "極簡白",
 };
 
-const makerLogoPath = "assets/seed-tree.png";
-
 const actionSeeds = {
   awareness: {
     options: [
@@ -1044,7 +1042,6 @@ function renderDone() {
           <span>我的回答</span>
           <p>${escapeHtml(answerText)}</p>
         </div>
-        <img class="maker-watermark" src="${makerLogoPath}" alt="種樹人" />
       </article>
       <p class="helper">圖片只在這台裝置產生，內容不會因下載而公開上傳。</p>
       <div class="actions">
@@ -1516,7 +1513,7 @@ function downloadShareCard() {
   setToast("分享圖已產生。");
 }
 
-async function downloadAnswerCard() {
+function downloadAnswerCard() {
   const latest = state.answers[state.answers.length - 1];
   const question = latest?.question || state.currentQuestion;
   const questionNumber = latest?.questionNumber || Number(state.number) || "";
@@ -1586,18 +1583,6 @@ async function downloadAnswerCard() {
     context.fillText(line, 180, answerY);
     answerY += answerFontSize * 1.58;
   });
-
-  try {
-    const logo = await loadImage(makerLogoPath);
-    context.save();
-    context.globalAlpha = 0.16;
-    context.drawImage(logo, width - 310, height - 310, 170, 170);
-    context.restore();
-  } catch {
-    context.fillStyle = "rgba(39,36,33,.28)";
-    context.font = "400 24px serif";
-    context.fillText("種樹人", width - 215, height - 210);
-  }
 
   const link = document.createElement("a");
   link.download = `回憶抽屜-第${questionNumber}題-回答卡.png`;
@@ -1686,15 +1671,6 @@ function drawCardBackground(context, width, height, style) {
   context.moveTo(width * 0.35, height * 0.74);
   context.lineTo(width * 0.65, height * 0.74);
   context.stroke();
-}
-
-function loadImage(src) {
-  return new Promise((resolve, reject) => {
-    const image = new Image();
-    image.onload = () => resolve(image);
-    image.onerror = reject;
-    image.src = src;
-  });
 }
 
 function wrapCanvasText(context, text, maxWidth, maxLines = 5) {

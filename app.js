@@ -707,6 +707,11 @@ function bindEvents() {
   if (downloadQuestionButton) {
     downloadQuestionButton.addEventListener("click", downloadAnswerCard);
   }
+
+  const shareReturnButton = document.querySelector("#shareReturnLink");
+  if (shareReturnButton) {
+    shareReturnButton.addEventListener("click", shareReturnLink);
+  }
 }
 
 function render() {
@@ -1060,16 +1065,97 @@ function renderDone() {
           <span>我的回答</span>
           <p class="${answerSize.trim()}">${escapeHtml(answerText)}</p>
         </div>
-        <p class="card-date">${dateStamp}</p>
+        <div class="card-footer">
+          <p class="card-date">${dateStamp}</p>
+          <div class="card-return">
+            <img id="cardReturnQr" alt="回到抽卡首頁的 QR Code" />
+            <span>也抽一張</span>
+          </div>
+        </div>
       </article>
       <p class="helper">圖片只在這台裝置產生，內容不會因下載而公開上傳。</p>
       <div class="actions">
         <button id="downloadQuestionCard" class="button">下載回答卡</button>
+        <button id="shareReturnLink" class="button secondary">分享抽卡連結</button>
         <button class="button secondary" data-view="number">再抽一題</button>
         <button class="button secondary" data-view="home">回首頁</button>
       </div>
     </div>
   `, null);
+  renderReturnQr();
+}
+
+function getShareLandingUrl() {
+  if (!/^https?:$/.test(window.location.protocol)) return "";
+  const url = new URL("/", window.location.origin);
+  url.searchParams.set("from", "share-card");
+  return url.toString();
+}
+
+function drawQrCode(context, url, x, y, size) {
+  const code = createQrCode(url);
+  if (!code) return false;
+  const modules = code.getModuleCount();
+  const quietZone = 3;
+  const cellSize = size / (modules + quietZone * 2);
+
+  context.fillStyle = "rgba(255,253,247,.94)";
+  context.fillRect(x, y, size, size);
+  context.fillStyle = "#302c27";
+  for (let row = 0; row < modules; row += 1) {
+    for (let column = 0; column < modules; column += 1) {
+      if (!code.isDark(row, column)) continue;
+      const left = x + (column + quietZone) * cellSize;
+      const top = y + (row + quietZone) * cellSize;
+      context.fillRect(Math.floor(left), Math.floor(top), Math.ceil(cellSize), Math.ceil(cellSize));
+    }
+  }
+  return true;
+}
+
+function createQrCode(url) {
+  if (!url || typeof window.qrcode !== "function") return null;
+  const code = window.qrcode(0, "M");
+  code.addData(url);
+  code.make();
+  return code;
+}
+
+function renderReturnQr() {
+  const image = document.querySelector("#cardReturnQr");
+  const url = getShareLandingUrl();
+  const code = createQrCode(url);
+  if (!image || !code) {
+    document.querySelector(".card-return")?.classList.add("hidden");
+    return;
+  }
+  image.src = code.createDataURL(4, 12);
+}
+
+async function shareReturnLink() {
+  const url = getShareLandingUrl();
+  if (!url) {
+    setToast("部署到網站後即可分享抽卡連結。");
+    return;
+  }
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title: "回憶抽屜",
+        text: "也抽一張，看看你會遇見哪個問題。",
+        url,
+      });
+      return;
+    } catch (error) {
+      if (error?.name === "AbortError") return;
+    }
+  }
+  try {
+    await navigator.clipboard.writeText(url);
+    setToast("抽卡連結已複製。");
+  } catch {
+    setToast(url);
+  }
 }
 
 function makeSummary() {
@@ -1633,6 +1719,18 @@ function downloadAnswerCard() {
   context.fillStyle = "rgba(39,36,33,.48)";
   context.font = "500 21px sans-serif";
   context.fillText(dateStamp, 154, height - 138);
+
+  const returnUrl = getShareLandingUrl();
+  const qrSize = 116;
+  const qrX = width - 154 - qrSize;
+  const qrY = height - 232;
+  if (drawQrCode(context, returnUrl, qrX, qrY, qrSize)) {
+    context.textAlign = "center";
+    context.fillStyle = "rgba(39,36,33,.58)";
+    context.font = "600 20px sans-serif";
+    context.fillText("也抽一張", qrX + qrSize / 2, qrY + qrSize + 30);
+    context.textAlign = "left";
+  }
 
   const link = document.createElement("a");
   link.download = `回憶抽屜-第${questionNumber}題-回答卡.png`;

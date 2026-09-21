@@ -1030,8 +1030,9 @@ function renderDone() {
   const answerText = latest?.answerText || state.answerText || "";
   const questionLength = (question?.questionText || "").length;
   const questionSize = questionLength > 34 ? " text-small" : questionLength > 22 ? " text-medium" : "";
-  const answerSize = answerText.length > 140 ? " text-small" : answerText.length > 70 ? " text-medium" : "";
+  const answerSize = answerText.length > 100 ? " text-small" : answerText.length > 45 ? " text-medium" : "";
   const style = question?.mode === "new_year" ? "new_year_red" : "year_review_blue";
+  const seriesName = question?.mode === "new_year" ? "新年展望" : "回憶抽屜";
   const dateStamp = new Intl.DateTimeFormat("zh-TW", {
     year: "numeric",
     month: "2-digit",
@@ -1044,7 +1045,7 @@ function renderDone() {
       <span class="eyebrow">已收進抽屜</span>
       <h2 class="completion-message">${escapeHtml(state.completionQuote)}</h2>
       <article id="questionCardPreview" class="saved-question-card ${style}">
-        <p class="app-name">回憶抽屜</p>
+        <p class="app-name">${seriesName}</p>
         <p class="question-number">第 ${questionNumber} 題</p>
         <p class="main${questionSize}">${escapeHtml(question?.questionText || "剛剛那張卡片")}</p>
         <div class="saved-answer">
@@ -1553,7 +1554,7 @@ function downloadAnswerCard() {
 
   context.fillStyle = "rgba(39,36,33,.66)";
   context.font = "600 25px sans-serif";
-  context.fillText("回憶抽屜 · REFLECTION NOTES", 154, 156);
+  context.fillText(question?.mode === "new_year" ? "新年展望" : "回憶抽屜", 154, 156);
 
   context.fillStyle = palette[3];
   context.font = "700 25px sans-serif";
@@ -1587,11 +1588,22 @@ function downloadAnswerCard() {
   context.lineTo(width - 154, dividerY);
   context.stroke();
 
+  if (style === "new_year_red") {
+    context.fillStyle = "rgba(255,251,242,.5)";
+    context.strokeStyle = "rgba(126,86,62,.13)";
+    context.lineWidth = 2;
+    context.fillRect(138, dividerY + 30, width - 276, Math.min(430, height - dividerY - 210));
+    context.strokeRect(138, dividerY + 30, width - 276, Math.min(430, height - dividerY - 210));
+  }
+
   context.fillStyle = palette[3];
   context.font = "700 24px sans-serif";
-  context.fillText("我的回答  /  A NOTE TO KEEP", 154, dividerY + 62);
+  context.fillText("我的回答", 154, dividerY + 62);
 
-  const maxAnswerHeight = height - (dividerY + 160) - 190;
+  const availableAnswerHeight = height - (dividerY + 160) - 190;
+  const maxAnswerHeight = style === "new_year_red"
+    ? Math.min(300, availableAnswerHeight)
+    : availableAnswerHeight;
   let answerFontSize = 44;
   let answerLines = [];
   while (answerFontSize >= 26) {
@@ -1645,10 +1657,9 @@ function drawCardBackground(context, width, height, style) {
     base.addColorStop(0.48, "#f8f0df");
     base.addColorStop(1, "#c6d4dc");
   } else if (isNewYear) {
-    base.addColorStop(0, "#8e3731");
-    base.addColorStop(0.32, "#d99675");
-    base.addColorStop(0.66, "#fff4df");
-    base.addColorStop(1, "#f1c69b");
+    base.addColorStop(0, "#f1d5bd");
+    base.addColorStop(0.48, "#fff7e8");
+    base.addColorStop(1, "#edc7a6");
   } else {
     base.addColorStop(0, style === "minimal_white" ? "#fffdf7" : "#fff8e9");
     base.addColorStop(0.58, style === "minimal_white" ? "#fffdf7" : "#f4ead5");
@@ -1676,20 +1687,34 @@ function drawCardBackground(context, width, height, style) {
   }
 
   if (isNewYear) {
-    const sun = context.createRadialGradient(width * 0.78, height * 0.18, 10, width * 0.78, height * 0.18, width * 0.34);
-    sun.addColorStop(0, "rgba(255,244,199,.72)");
-    sun.addColorStop(1, "rgba(255,244,199,0)");
+    const sun = context.createRadialGradient(width * 0.82, height * 0.15, 10, width * 0.82, height * 0.15, width * 0.3);
+    sun.addColorStop(0, "rgba(255,219,150,.56)");
+    sun.addColorStop(1, "rgba(255,219,150,0)");
     context.fillStyle = sun;
     context.fillRect(0, 0, width, height);
 
-    context.strokeStyle = "rgba(181,139,73,.18)";
-    context.lineWidth = 2;
-    for (let x = 120; x < width - 120; x += 42) {
+    context.strokeStyle = "rgba(126,86,62,.05)";
+    context.lineWidth = 1;
+    for (let y = 150; y < height - 150; y += 58) {
       context.beginPath();
-      context.moveTo(x, 120);
-      context.lineTo(x, height - 120);
+      context.moveTo(110, y);
+      context.lineTo(width - 110, y);
       context.stroke();
     }
+
+    context.fillStyle = "rgba(93,107,72,.07)";
+    context.beginPath();
+    context.ellipse(width * 0.9, height * 0.28, 34, 78, -0.42, 0, Math.PI * 2);
+    context.ellipse(width * 0.84, height * 0.36, 42, 92, 0.55, 0, Math.PI * 2);
+    context.ellipse(width * 0.94, height * 0.44, 32, 74, -0.55, 0, Math.PI * 2);
+    context.fill();
+
+    context.strokeStyle = "rgba(126,86,62,.055)";
+    context.lineWidth = 5;
+    context.beginPath();
+    context.moveTo(width * 0.98, height * 0.2);
+    context.lineTo(width * 0.82, height * 0.55);
+    context.stroke();
   }
 
   context.strokeStyle = isYearReview ? "rgba(36,55,82,.22)" : "rgba(39,36,33,.16)";

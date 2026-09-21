@@ -715,19 +715,45 @@ h3 {
 
 .new_year_red {
   background:
-    radial-gradient(circle at 78% 18%, rgba(255, 244, 199, 0.72), transparent 22%),
-    radial-gradient(circle at 18% 82%, rgba(142, 55, 49, 0.18), transparent 24%),
-    linear-gradient(90deg, rgba(181, 139, 73, 0.18) 0 1px, transparent 1px 38px),
-    linear-gradient(145deg, #8e3731 0%, #d99675 32%, #fff4df 66%, #f1c69b 100%);
+    radial-gradient(ellipse at 82% 15%, rgba(255, 219, 150, 0.52), transparent 25%),
+    radial-gradient(ellipse at 7% 92%, rgba(126, 86, 62, 0.1), transparent 30%),
+    repeating-linear-gradient(0deg, transparent 0 43px, rgba(126, 86, 62, 0.035) 44px),
+    linear-gradient(145deg, #f1d5bd 0%, #fff7e8 48%, #edc7a6 100%);
 }
 
 .new_year_red::before {
-  border-color: rgba(142, 55, 49, 0.22);
-  box-shadow: inset 0 0 0 12px rgba(255, 248, 226, 0.22);
+  border-color: rgba(126, 86, 62, 0.18);
+  box-shadow: inset 0 0 0 10px rgba(255, 250, 238, 0.32);
 }
 
 .new_year_red::after {
-  background: rgba(142, 55, 49, 0.24);
+  border: 0;
+  background:
+    radial-gradient(ellipse at 94% 28%, rgba(93, 107, 72, 0.09) 0 5%, transparent 5.5%),
+    radial-gradient(ellipse at 88% 37%, rgba(93, 107, 72, 0.075) 0 7%, transparent 7.5%),
+    linear-gradient(112deg, transparent 0 70%, rgba(126, 86, 62, 0.045) 70.5% 71%, transparent 71.5%);
+}
+
+.new_year_red .app-name {
+  color: rgba(111, 68, 49, 0.64);
+}
+
+.new_year_red .question-number {
+  color: #9b5144;
+  background: rgba(255, 250, 238, 0.38);
+}
+
+.new_year_red .saved-answer {
+  margin-top: 18px;
+  padding: 18px 20px 20px;
+  border: 1px solid rgba(126, 86, 62, 0.12);
+  border-radius: 6px;
+  background: rgba(255, 251, 242, 0.48);
+  box-shadow: 0 8px 22px rgba(111, 68, 49, 0.045);
+}
+
+.new_year_red .saved-answer > span {
+  color: rgba(155, 81, 68, 0.78);
 }
 
 .paper_warm {
@@ -782,5 +808,42 @@ h3 {
 
   .number-row {
     grid-template-columns: 1fr;
+  }
+
+  .saved-question-card {
+    min-height: 0;
+    padding: 30px;
+    gap: 12px;
+  }
+
+  .saved-question-card .main,
+  .saved-question-card .main.text-medium,
+  .saved-question-card .main.text-small {
+    margin-top: 4px;
+    font-size: 1.22rem;
+    line-height: 1.48;
+  }
+
+  .new_year_red .saved-answer,
+  .saved-answer {
+    margin-top: 6px;
+    padding: 12px 14px 14px;
+  }
+
+  .saved-answer p,
+  .saved-answer p.text-medium {
+    margin-top: 9px;
+    font-size: 0.76rem;
+    line-height: 1.62;
+  }
+
+  .saved-answer p.text-small {
+    margin-top: 8px;
+    font-size: 0.66rem;
+    line-height: 1.48;
+  }
+
+  .saved-question-card .card-date {
+    font-size: 0.6rem;
   }
 }

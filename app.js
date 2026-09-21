@@ -682,7 +682,7 @@ function bindEvents() {
 
   const downloadQuestionButton = document.querySelector("#downloadQuestionCard");
   if (downloadQuestionButton) {
-    downloadQuestionButton.addEventListener("click", downloadQuestionCard);
+    downloadQuestionButton.addEventListener("click", downloadAnswerCard);
   }
 }
 
@@ -797,8 +797,10 @@ function submitAnswer() {
   }
 
   state.riskAlert = detectRiskContent(state.answerText);
-  state.followUpQuestion = makeFollowUpQuestion(state.currentQuestion, state.answerText, state.riskAlert);
-  setView("follow");
+  state.followUpQuestion = "";
+  state.followUpAnswer = "";
+  rememberCurrentAnswer();
+  setView("done");
 }
 
 function detectRiskContent(text) {
@@ -961,6 +963,7 @@ function rememberCurrentAnswer() {
 
   const nextAnswer = {
     question: state.currentQuestion,
+    questionNumber: Number(state.number) || null,
     answerText: state.answerText,
     followUpQuestion: state.followUpQuestion,
     followUpAnswer: state.followUpAnswer,
@@ -979,6 +982,7 @@ function rememberCurrentAnswer() {
     mode: state.currentQuestion.mode,
     modeLabel: labels[state.currentQuestion.mode],
     questionId: state.currentQuestion.id,
+    questionNumber: Number(state.number) || null,
     stage: state.currentQuestion.stage,
     category: state.currentQuestion.category,
     questionText: state.currentQuestion.questionText,
@@ -1007,23 +1011,27 @@ function saveAndNext() {
 function renderDone() {
   const latest = state.answers[state.answers.length - 1];
   const question = latest?.question;
+  const questionNumber = latest?.questionNumber || Number(state.number) || "";
+  const answerText = latest?.answerText || state.answerText || "";
   const style = question?.mode === "new_year" ? "new_year_red" : "year_review_blue";
   page(`
     <div class="stack">
       ${renderSafetyCard()}
       <span class="eyebrow">已收進抽屜</span>
-      <h2>這一題已經變成一張卡。</h2>
+      <h2>你的回答已經記下來了。</h2>
       <article id="questionCardPreview" class="saved-question-card ${style}">
         <p class="app-name">回憶抽屜</p>
-        <p class="category-label">${question?.category || "抽屜卡"}</p>
+        <p class="question-number">第 ${questionNumber} 題</p>
         <p class="main">${question?.questionText || "剛剛那張卡片"}</p>
+        <div class="saved-answer">
+          <span>我的回答</span>
+          <p>${escapeHtml(answerText)}</p>
+        </div>
         <img class="maker-watermark" src="${makerLogoPath}" alt="種樹人" />
       </article>
-      <p class="helper">這張卡預設只放題目，不放你的回答。適合下載後分享到社群，或先存起來。</p>
+      <p class="helper">圖片只在這台裝置產生，內容不會因下載而公開上傳。</p>
       <div class="actions">
-        <button id="downloadQuestionCard" class="button">下載題目卡</button>
-        <button id="makeSummary" class="button">看這題的總結</button>
-        <button class="button secondary" data-view="share">製作分享卡</button>
+        <button id="downloadQuestionCard" class="button">下載回答卡</button>
         <button class="button secondary" data-view="number">再抽一題</button>
         <button class="button secondary" data-view="home">回首頁</button>
       </div>
@@ -1033,13 +1041,7 @@ function renderDone() {
 
 function makeSummary() {
   rememberCurrentAnswer();
-  const latest = state.answers[state.answers.length - 1];
-  const question = latest?.question || state.currentQuestion;
-  const answerText = latest?.answerText || state.answerText || "";
-  const followUpAnswer = latest?.followUpAnswer || state.followUpAnswer || "";
-
-  state.summary = buildConcreteSummary(question, answerText, followUpAnswer, state.riskAlert);
-  setView("summary");
+  setView("done");
 }
 
 function buildConcreteSummary(question, answerText, followUpAnswer, riskAlert = null) {
@@ -1604,9 +1606,11 @@ function downloadShareCard() {
   setToast("分享圖已產生。");
 }
 
-async function downloadQuestionCard() {
+async function downloadAnswerCard() {
   const latest = state.answers[state.answers.length - 1];
   const question = latest?.question || state.currentQuestion;
+  const questionNumber = latest?.questionNumber || Number(state.number) || "";
+  const answerText = latest?.answerText || state.answerText || "";
   const canvas = document.createElement("canvas");
   const context = canvas.getContext("2d");
   const width = 1080;
@@ -1630,16 +1634,47 @@ async function downloadQuestionCard() {
   context.fillText("回憶抽屜", width / 2, 180);
 
   context.fillStyle = palette[3];
-  context.font = "700 30px serif";
-  context.fillText(question?.category || "抽屜卡", width / 2, 286);
+  context.font = "700 32px serif";
+  context.fillText(`第 ${questionNumber} 題`, width / 2, 286);
 
   context.fillStyle = palette[4];
-  context.font = "700 70px serif";
-  const questionLines = wrapCanvasText(context, question?.questionText || "剛剛那張卡片", width - 260);
-  let questionY = height / 2 - (questionLines.length - 1) * 58;
+  context.font = "700 58px serif";
+  const questionLines = wrapCanvasText(context, question?.questionText || "剛剛那張卡片", width - 260, 4);
+  let questionY = 390;
   questionLines.forEach((line) => {
     context.fillText(line, width / 2, questionY);
-    questionY += 116;
+    questionY += 82;
+  });
+
+  const dividerY = Math.max(590, questionY + 28);
+  context.strokeStyle = style === "year_review_blue" ? "rgba(37,56,83,.28)" : "rgba(142,55,49,.28)";
+  context.beginPath();
+  context.moveTo(180, dividerY);
+  context.lineTo(width - 180, dividerY);
+  context.stroke();
+
+  context.textAlign = "left";
+  context.fillStyle = palette[3];
+  context.font = "700 28px sans-serif";
+  context.fillText("我的回答", 180, dividerY + 70);
+
+  const maxAnswerHeight = height - (dividerY + 160) - 190;
+  let answerFontSize = 44;
+  let answerLines = [];
+  while (answerFontSize >= 26) {
+    context.font = `400 ${answerFontSize}px serif`;
+    answerLines = wrapCanvasText(context, answerText, width - 360, 30);
+    if (answerLines.length * answerFontSize * 1.58 <= maxAnswerHeight) break;
+    answerFontSize -= 2;
+  }
+  const maxAnswerLines = Math.max(1, Math.floor(maxAnswerHeight / (answerFontSize * 1.58)));
+  answerLines = wrapCanvasText(context, answerText, width - 360, maxAnswerLines);
+  context.fillStyle = palette[4];
+  context.font = `400 ${answerFontSize}px serif`;
+  let answerY = dividerY + 140;
+  answerLines.forEach((line) => {
+    context.fillText(line, 180, answerY);
+    answerY += answerFontSize * 1.58;
   });
 
   try {
@@ -1655,22 +1690,24 @@ async function downloadQuestionCard() {
   }
 
   const link = document.createElement("a");
-  link.download = "回憶抽屜-題目卡.png";
+  link.download = `回憶抽屜-第${questionNumber}題-回答卡.png`;
   link.href = canvas.toDataURL("image/png");
   link.click();
   appendStored(storageKeys.shareCards, {
-    id: createId("question_card"),
+    id: createId("answer_card"),
     sessionId: state.sessionId,
     mode: question?.mode || state.mode,
-    cardType: "question_only",
+    cardType: "question_answer",
     backgroundStyle: style,
     questionId: question?.id,
+    questionNumber,
     questionText: question?.questionText,
+    answerText,
     displayQuestion: true,
-    displayAnswer: false,
+    displayAnswer: true,
     createdAt: new Date().toISOString(),
   });
-  setToast("題目卡已產生。");
+  setToast("回答卡已下載。");
 }
 
 function drawCardBackground(context, width, height, style) {
@@ -1750,11 +1787,16 @@ function loadImage(src) {
   });
 }
 
-function wrapCanvasText(context, text, maxWidth) {
-  const chars = Array.from(text);
+function wrapCanvasText(context, text, maxWidth, maxLines = 5) {
+  const chars = Array.from(String(text || ""));
   const lines = [];
   let line = "";
   chars.forEach((char) => {
+    if (char === "\n") {
+      lines.push(line);
+      line = "";
+      return;
+    }
     const testLine = line + char;
     if (context.measureText(testLine).width > maxWidth && line) {
       lines.push(line);
@@ -1764,7 +1806,10 @@ function wrapCanvasText(context, text, maxWidth) {
     }
   });
   if (line) lines.push(line);
-  return lines.slice(0, 5);
+  if (lines.length <= maxLines) return lines;
+  const visible = lines.slice(0, maxLines);
+  visible[maxLines - 1] = `${visible[maxLines - 1].replace(/[.。…]+$/, "")}…`;
+  return visible;
 }
 
 function renderSubmitQuestion() {

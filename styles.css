@@ -657,11 +657,43 @@ h3 {
   font-weight: 700;
 }
 
+.saved-question-card .question-number {
+  color: var(--accent);
+  font-size: 0.94rem;
+  font-weight: 700;
+}
+
 .saved-question-card .main {
   color: var(--ink);
   font-size: clamp(1.8rem, 4.6vw, 2.8rem);
   font-weight: 650;
   line-height: 1.36;
+}
+
+.saved-answer {
+  width: 88%;
+  padding-top: 22px;
+  border-top: 1px solid rgba(39, 36, 33, 0.2);
+  position: relative;
+  z-index: 1;
+  text-align: left;
+}
+
+.saved-answer > span {
+  color: var(--accent);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.saved-answer p {
+  margin-top: 10px;
+  max-height: 12em;
+  overflow: auto;
+  color: rgba(39, 36, 33, 0.82);
+  font-size: clamp(1rem, 2.3vw, 1.2rem);
+  line-height: 1.7;
+  text-align: left;
+  white-space: pre-wrap;
 }
 
 .saved-question-card .credit {

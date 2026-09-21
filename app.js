@@ -577,9 +577,10 @@ function setToast(message) {
 }
 
 function page(content, side = defaultSide()) {
+  const hasSide = side !== null;
   app.innerHTML = `
-    <section class="frame mode-${state.mode || "home"}">
-      <aside class="side">${side}</aside>
+    <section class="frame mode-${state.mode || "home"}${hasSide ? "" : " no-side"}">
+      ${hasSide ? `<aside class="side">${side}</aside>` : ""}
       <section class="content">
         ${content}
         ${state.toast ? `<div class="toast">${state.toast}</div>` : ""}
@@ -1033,7 +1034,7 @@ function renderDone() {
     <div class="stack">
       ${renderSafetyCard()}
       <span class="eyebrow">已收進抽屜</span>
-      <h2>${escapeHtml(state.completionQuote)}</h2>
+      <h2 class="completion-message">${escapeHtml(state.completionQuote)}</h2>
       <article id="questionCardPreview" class="saved-question-card ${style}">
         <p class="app-name">回憶抽屜</p>
         <p class="question-number">第 ${questionNumber} 題</p>
@@ -1050,7 +1051,7 @@ function renderDone() {
         <button class="button secondary" data-view="home">回首頁</button>
       </div>
     </div>
-  `);
+  `, null);
 }
 
 function makeSummary() {

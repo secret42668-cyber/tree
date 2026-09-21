@@ -73,6 +73,18 @@ button {
   background: rgba(255, 245, 229, 0.95);
 }
 
+.frame.no-side {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.frame.no-side .content {
+  justify-items: center;
+}
+
+.frame.no-side .stack {
+  width: min(720px, 100%);
+}
+
 .side {
   padding: clamp(28px, 6vw, 68px);
   color: #fff8ea;
@@ -179,6 +191,17 @@ h3 {
 .stack {
   display: grid;
   gap: 18px;
+}
+
+.completion-message {
+  max-width: 38rem;
+  font-size: clamp(1.15rem, 2vw, 1.5rem);
+  font-weight: 560;
+  line-height: 1.65;
+}
+
+.completion-message + .saved-question-card {
+  margin-top: 14px;
 }
 
 .actions {

@@ -460,81 +460,6 @@ h3 {
   line-height: 1.6;
 }
 
-.admin-view {
-  align-content: start;
-}
-
-.admin-stats {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-}
-
-.stat-card,
-.admin-section,
-.admin-record {
-  border: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.44);
-}
-
-.stat-card {
-  min-height: 94px;
-  padding: 16px;
-  display: grid;
-  align-content: center;
-  gap: 6px;
-}
-
-.stat-card strong {
-  color: var(--accent);
-  font-size: 2rem;
-  line-height: 1;
-}
-
-.stat-card span,
-.record-meta,
-.record-sub {
-  color: var(--muted);
-}
-
-.admin-section {
-  padding: 18px;
-  display: grid;
-  gap: 12px;
-}
-
-.admin-section-title {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  align-items: baseline;
-}
-
-.admin-section-title span {
-  color: var(--muted);
-  font-size: 0.92rem;
-}
-
-.admin-record {
-  padding: 14px;
-  display: grid;
-  gap: 8px;
-}
-
-.admin-record strong {
-  line-height: 1.55;
-}
-
-.admin-record p {
-  color: var(--muted);
-  line-height: 1.65;
-}
-
-.record-meta,
-.record-sub {
-  font-size: 0.88rem;
-}
-
 .share-layout {
   display: grid;
   grid-template-columns: minmax(250px, 0.9fr) minmax(280px, 1.1fr);
@@ -798,7 +723,6 @@ h3 {
 
   .mode-grid,
   .option-grid,
-  .admin-stats,
   .resource-grid,
   .share-layout {
     grid-template-columns: 1fr;

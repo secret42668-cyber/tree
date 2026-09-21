@@ -697,7 +697,6 @@ function render() {
     share: renderShare,
     submit: renderSubmitQuestion,
     done: renderDone,
-    admin: renderAdmin,
   };
 
   views[state.view]();
@@ -720,7 +719,6 @@ function renderHome() {
       </div>
       <div class="actions">
         <button class="button secondary" data-view="submit">投稿一張抽屜卡</button>
-        <button class="button secondary" data-view="admin">管理後台</button>
       </div>
     </div>
   `);
@@ -1382,113 +1380,6 @@ function saveAction(event) {
     createdAt: new Date().toISOString(),
   });
   setToast("已存進「正在種的事」。");
-}
-
-function renderAdmin() {
-  const answers = readStored(storageKeys.answers);
-  const actions = readStored(storageKeys.actions);
-  const submissions = readStored(storageKeys.submissions);
-  const shareCards = readStored(storageKeys.shareCards);
-  const yearCount = answers.filter((item) => item.mode === "year_review").length;
-  const newYearCount = answers.filter((item) => item.mode === "new_year").length;
-
-  page(`
-    <div class="stack admin-view">
-      <span class="eyebrow">管理後台</span>
-      <h2>目前存在這台瀏覽器裡的內容</h2>
-      <p class="helper">這是本機原型後台，資料存在這個瀏覽器的 localStorage。正式產品需要接資料庫，才看得到所有使用者與跨裝置紀錄。</p>
-      <section class="admin-stats">
-        ${renderStat("回答數", answers.length)}
-        ${renderStat("年末回顧", yearCount)}
-        ${renderStat("新年展望", newYearCount)}
-        ${renderStat("行動提醒", actions.length)}
-        ${renderStat("分享卡", shareCards.length)}
-        ${renderStat("投稿題目", submissions.length)}
-      </section>
-      ${renderAdminSection("最近留下的回答", answers, renderAnswerRecord)}
-      ${renderAdminSection("正在種的事", actions, renderActionRecord)}
-      ${renderAdminSection("題目卡與分享紀錄", shareCards, renderShareRecord)}
-      ${renderAdminSection("投稿題目", submissions, renderSubmissionRecord)}
-      <div class="actions">
-        <button class="button secondary" data-view="home">回首頁</button>
-      </div>
-    </div>
-  `);
-}
-
-function renderStat(label, value) {
-  return `
-    <article class="stat-card">
-      <strong>${value}</strong>
-      <span>${label}</span>
-    </article>
-  `;
-}
-
-function renderAdminSection(title, records, renderer) {
-  const preview = records.slice(0, 8);
-  return `
-    <section class="admin-section">
-      <div class="admin-section-title">
-        <h3>${title}</h3>
-        <span>${records.length} 筆</span>
-      </div>
-      ${preview.length ? preview.map(renderer).join("") : `<p class="helper">目前還沒有資料。</p>`}
-    </section>
-  `;
-}
-
-function renderAnswerRecord(record) {
-  return `
-    <article class="admin-record">
-      <div class="record-meta">${formatDate(record.createdAt)} · ${record.modeLabel || labels[record.mode] || ""} · ${record.category || ""}</div>
-      <strong>${escapeHtml(record.questionText)}</strong>
-      <p>${escapeHtml(trimText(record.answerText, 120))}</p>
-      ${record.followUpAnswer ? `<p class="record-sub">追問：${escapeHtml(trimText(record.followUpAnswer, 100))}</p>` : ""}
-    </article>
-  `;
-}
-
-function renderActionRecord(record) {
-  return `
-    <article class="admin-record">
-      <div class="record-meta">${formatDate(record.createdAt)} · ${record.modeLabel || labels[record.mode] || ""} · ${record.frequency || "none"}</div>
-      <strong>${escapeHtml(record.actionText)}</strong>
-      <p>${escapeHtml(record.reminderText || "")}</p>
-      <p class="record-sub">${escapeHtml(trimText(record.questionText || "", 90))}</p>
-    </article>
-  `;
-}
-
-function renderShareRecord(record) {
-  return `
-    <article class="admin-record">
-      <div class="record-meta">${formatDate(record.createdAt)} · ${record.cardType} · ${record.backgroundStyle}</div>
-      <strong>${escapeHtml(record.questionText || "分享卡")}</strong>
-      <p>${record.displayAnswer ? "包含回答" : "只顯示題目"}</p>
-    </article>
-  `;
-}
-
-function renderSubmissionRecord(record) {
-  return `
-    <article class="admin-record">
-      <div class="record-meta">${formatDate(record.createdAt)} · ${record.mode} · ${record.status}</div>
-      <strong>${escapeHtml(record.questionText)}</strong>
-      <p>${escapeHtml(record.reason || "尚未填寫投稿理由。")}</p>
-      ${record.allowCredit && record.authorName ? `<p class="record-sub">署名：${escapeHtml(record.authorName)}</p>` : ""}
-    </article>
-  `;
-}
-
-function formatDate(value) {
-  if (!value) return "";
-  return new Intl.DateTimeFormat("zh-Hant", {
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(new Date(value));
 }
 
 function renderShare() {

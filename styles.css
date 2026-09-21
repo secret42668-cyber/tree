@@ -555,14 +555,15 @@ h3 {
   aspect-ratio: 4 / 5;
   width: min(430px, 100%);
   justify-self: center;
-  padding: clamp(28px, 5vw, 48px);
+  padding: clamp(38px, 7vw, 64px);
   border: 1px solid rgba(255, 248, 234, 0.55);
   box-shadow: 0 22px 52px rgba(40, 30, 20, 0.16);
   display: grid;
-  align-content: center;
-  justify-items: center;
-  gap: 22px;
-  text-align: center;
+  grid-template-rows: auto auto auto minmax(0, 1fr) auto;
+  align-content: stretch;
+  justify-items: stretch;
+  gap: 18px;
+  text-align: left;
   position: relative;
   overflow: hidden;
 }
@@ -580,16 +581,14 @@ h3 {
 }
 
 .saved-question-card::after {
-  width: 46%;
-  height: 1px;
-  left: 27%;
-  bottom: 26%;
-  background: rgba(39, 36, 33, 0.18);
+  inset: 10% 9%;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 250, 238, 0.08);
 }
 
 .saved-question-card p {
   margin: 0;
-  max-width: 88%;
+  max-width: 100%;
   min-width: 0;
   overflow-wrap: anywhere;
   word-break: break-word;
@@ -599,7 +598,10 @@ h3 {
 
 .saved-question-card .app-name {
   color: rgba(39, 36, 33, 0.66);
-  font-size: 1rem;
+  font-family: sans-serif;
+  font-size: 0.72rem;
+  font-weight: 650;
+  text-transform: uppercase;
 }
 
 .saved-question-card .category-label {
@@ -609,16 +611,23 @@ h3 {
 }
 
 .saved-question-card .question-number {
+  width: fit-content;
+  padding: 5px 10px;
+  border: 1px solid currentColor;
+  border-radius: 4px;
   color: var(--accent);
-  font-size: 0.94rem;
+  font-family: sans-serif;
+  font-size: 0.76rem;
   font-weight: 700;
 }
 
 .saved-question-card .main {
   color: var(--ink);
-  font-size: clamp(1.8rem, 4.6vw, 2.8rem);
+  margin-top: 12px;
+  font-size: clamp(1.55rem, 3.8vw, 2.25rem);
   font-weight: 650;
-  line-height: 1.36;
+  line-height: 1.52;
+  text-align: left;
 }
 
 .saved-question-card .main.text-medium {
@@ -631,8 +640,9 @@ h3 {
 }
 
 .saved-answer {
-  width: 88%;
-  padding-top: 22px;
+  width: 100%;
+  margin-top: 12px;
+  padding-top: 18px;
   border-top: 1px solid rgba(39, 36, 33, 0.2);
   position: relative;
   z-index: 1;
@@ -641,20 +651,29 @@ h3 {
 
 .saved-answer > span {
   color: var(--accent);
-  font-size: 0.82rem;
+  font-family: sans-serif;
+  font-size: 0.68rem;
   font-weight: 700;
 }
 
 .saved-answer p {
-  margin-top: 10px;
+  margin-top: 18px;
   max-width: 100%;
   max-height: 12em;
   overflow: hidden;
   color: rgba(39, 36, 33, 0.82);
   font-size: clamp(1rem, 2.3vw, 1.2rem);
-  line-height: 1.7;
+  line-height: 1.9;
   text-align: left;
   white-space: pre-wrap;
+}
+
+.saved-question-card .card-date {
+  align-self: end;
+  color: rgba(39, 36, 33, 0.48);
+  font-family: sans-serif;
+  font-size: 0.68rem;
+  letter-spacing: 0;
 }
 
 .saved-answer p.text-medium {
@@ -680,15 +699,14 @@ h3 {
 
 .year_review_blue {
   background:
-    radial-gradient(circle at 78% 18%, rgba(243, 218, 158, 0.34), transparent 18%),
-    linear-gradient(90deg, rgba(255, 248, 226, 0.74) 0 13%, transparent 13% 87%, rgba(255, 248, 226, 0.5) 87%),
-    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.16) 0 1px, transparent 1px 34px),
-    linear-gradient(145deg, #243752 0%, #dbe4e9 42%, #f7eedb 72%, #b9cbd8 100%);
+    radial-gradient(circle at 80% 16%, rgba(252, 224, 158, 0.46), transparent 22%),
+    repeating-radial-gradient(circle at 20% 20%, rgba(34, 50, 73, 0.035) 0 1px, transparent 1px 4px),
+    linear-gradient(145deg, #dce5e8 0%, #f8f0df 48%, #c6d4dc 100%);
 }
 
 .year_review_blue::before {
-  border-color: rgba(248, 238, 212, 0.5);
-  box-shadow: inset 0 0 0 12px rgba(36, 55, 82, 0.08);
+  border-color: rgba(36, 55, 82, 0.2);
+  box-shadow: inset 0 0 0 10px rgba(255, 250, 238, 0.28);
 }
 
 .year_review_blue::after {

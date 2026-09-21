@@ -745,7 +745,7 @@ function renderNumber() {
       <p class="helper">請輸入 1～50。不用想太多，讓直覺先回答。</p>
       <div class="number-row">
         <input id="numberInput" class="field number" inputmode="numeric" min="1" max="50" value="${state.number}" placeholder="27" />
-        <button id="drawButton" class="button">打開抽屜</button>
+        <button id="drawButton" class="button">${state.mode === "new_year" ? "想想未來" : "打開抽屜"}</button>
       </div>
       <div class="actions">
         <button class="button secondary" data-view="home">回首頁</button>

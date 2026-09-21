@@ -638,6 +638,12 @@ function bindEvents() {
       state.number = rawNumber && Number(rawNumber) > 50 ? "50" : rawNumber;
       event.target.value = state.number;
     });
+    numberInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        drawQuestion();
+      }
+    });
   }
 
   const answerInput = document.querySelector("#answerText");
@@ -794,7 +800,9 @@ function renderQuestion() {
         <h2 class="question-text">${question.questionText}</h2>
         <p class="helper">${question.helperText}</p>
       </article>
-      <p class="helper">不用整理得很好。先留下你當時真的在想的。</p>
+      <p class="helper">${state.mode === "new_year"
+        ? "不用想得很清楚，第一直覺會是什麼、可能就是你的方向"
+        : "不用整理得很好。先留下你當時真的在想的。"}</p>
       <textarea id="answerText" class="textarea" placeholder="寫下你想到的就好。">${escapeHtml(state.answerText)}</textarea>
       <div class="actions">
         <button id="submitAnswer" class="button">留下回答</button>
